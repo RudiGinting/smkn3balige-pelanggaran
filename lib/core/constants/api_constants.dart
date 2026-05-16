@@ -1,6 +1,6 @@
 class ApiConstants {
   // ============================================================
-  static const String _host = '10.214.176.188';
+  static const String _host = '192.168.210.190';
   static const String _port = '3000';
 
   static String get baseUrl => 'http://$_host:$_port/api';

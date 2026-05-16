@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../features/admin/admin_page.dart'; // ← sesuaikan path import AdminPage kamu
 
 class AppDrawer extends StatelessWidget {
   final int currentIndex;
@@ -32,25 +33,77 @@ class AppDrawer extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Logo box
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: AppColors.gold,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        '3',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.navy,
+                  // ── Row: Logo + Tombol Admin ──
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Logo box
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: AppColors.gold,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            '3',
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.navy,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+
+                      const Spacer(),
+
+                      // ── Tombol Admin ──
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pop(); // tutup drawer
+                          Navigator.of(context).push( // ← langsung push ke AdminPage
+                            MaterialPageRoute(
+                              builder: (_) => const AdminPage(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 7),
+                          decoration: BoxDecoration(
+                            color: AppColors.gold.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: AppColors.gold.withValues(alpha: 0.4),
+                              width: 1,
+                            ),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.shield_rounded,
+                                color: AppColors.gold,
+                                size: 14,
+                              ),
+                              SizedBox(width: 5),
+                              Text(
+                                'Admin',
+                                style: TextStyle(
+                                  color: AppColors.gold,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+
                   const SizedBox(height: 14),
                   const Text(
                     'SMK NEGERI 3',
@@ -99,7 +152,7 @@ class AppDrawer extends StatelessWidget {
                     label: menu['label'] as String,
                     isActive: isActive,
                     onTap: () {
-                      Navigator.of(context).pop(); // tutup drawer
+                      Navigator.of(context).pop();
                       onMenuTap(i);
                     },
                   );
@@ -166,13 +219,13 @@ class _DrawerItem extends StatelessWidget {
         ),
         trailing: isActive
             ? Container(
-                width: 4,
-                height: 4,
-                decoration: const BoxDecoration(
-                  color: AppColors.gold,
-                  shape: BoxShape.circle,
-                ),
-              )
+          width: 4,
+          height: 4,
+          decoration: const BoxDecoration(
+            color: AppColors.gold,
+            shape: BoxShape.circle,
+          ),
+        )
             : null,
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
