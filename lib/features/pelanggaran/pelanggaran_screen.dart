@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
+// Import ApiConstants agar IP & Port selalu sinkron dengan fitur lainnya
+import '../../core/constants/api_constants.dart';
 
 class PelanggaranScreen extends StatefulWidget {
   const PelanggaranScreen({super.key});
@@ -11,8 +13,8 @@ class PelanggaranScreen extends StatefulWidget {
 }
 
 class _PelanggaranScreenState extends State<PelanggaranScreen> {
-  static const String baseUrl =
-      "http://10.0.2.2:3001/api/surat-panggilan";
+  // Menggunakan baseUrl pusat dari ApiConstants agar terhubung ke BE yang benar
+  final String baseUrl = "${ApiConstants.baseUrl}${ApiConstants.suratPanggilan}";
 
   List<dynamic> data = [];
   bool loading = false;
@@ -38,7 +40,7 @@ class _PelanggaranScreenState extends State<PelanggaranScreen> {
         setState(() => data = jsonData['data']);
       }
     } catch (e) {
-      debugPrint("Error: $e");
+      debugPrint("Error Fetch Data: $e");
     }
 
     setState(() => loading = false);
@@ -46,8 +48,12 @@ class _PelanggaranScreenState extends State<PelanggaranScreen> {
 
   // ================= DELETE =================
   Future<void> deleteData(int id) async {
-    await http.delete(Uri.parse("$baseUrl/$id"));
-    fetchData();
+    try {
+      await http.delete(Uri.parse("$baseUrl/$id"));
+      fetchData();
+    } catch (e) {
+      debugPrint("Error Delete: $e");
+    }
   }
 
   // ================= CREATE =================
@@ -57,30 +63,46 @@ class _PelanggaranScreenState extends State<PelanggaranScreen> {
       "tanggal_panggilan": tanggalController.text,
     };
 
-    await http.post(
-      Uri.parse(baseUrl),
-      headers: {"Content-Type": "application/json"},
-      body: json.encode(payload),
-    );
+    try {
+      await http.post(
+        Uri.parse(baseUrl),
+        headers: {"Content-Type": "application/json"},
+        body: json.encode(payload),
+      );
 
-    Navigator.pop(context);
-    fetchData();
+      Navigator.pop(context);
+      fetchData();
+    } catch (e) {
+      debugPrint("Error Create: $e");
+    }
   }
 
   // ================= PDF =================
   void openPdf(int id) async {
     final url = "$baseUrl/$id/pdf";
-    await launchUrl(Uri.parse(url));
+    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
   }
 
-  // ================= WA =================
+  // ================= WA (FIXED ERROR SUBTYPE) =================
   Future<void> sendWA(int id) async {
-    final res = await http.get(Uri.parse("$baseUrl/$id/whatsapp"));
-    final jsonData = json.decode(res.body);
+    try {
+      final res = await http.get(Uri.parse("$baseUrl/$id/whatsapp"));
 
-    if (jsonData['status'] == 'success') {
-      final link = jsonData['data']['link_whatsapp'];
-      await launchUrl(Uri.parse(link));
+      if (res.statusCode == 200) {
+        // PERBAIKAN: Karena BE mengembalikan String teks link langsung,
+        // kita tidak perlu menggunakan json.decode(). Cukup bersihkan tanda petik jika ada.
+        final link = res.body.replaceAll('"', '').trim();
+
+        if (link.isNotEmpty) {
+          await launchUrl(Uri.parse(link), mode: LaunchMode.externalApplication);
+        } else {
+          debugPrint("Link WhatsApp kosong");
+        }
+      } else {
+        debugPrint("Gagal mengambil link WA, Status Code: ${res.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("Error WA: $e");
     }
   }
 
